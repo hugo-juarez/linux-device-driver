@@ -1,0 +1,5 @@
+.env
+.main*
+.[Mm]odule*
+main.[(mod)o]*
+[Mm]odule*

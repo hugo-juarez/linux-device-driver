@@ -1,0 +1,9 @@
+services:
+  cross-build:
+    build: .
+    user: "${UID}:${GID}"
+    volumes:
+      - .:/project
+      - ~/code/workspace/buildroot-2025.02.15:/buildroot
+    working_dir: /project
+    tty: true
