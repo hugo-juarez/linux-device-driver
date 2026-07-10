@@ -59,7 +59,11 @@ static int __init pcd_driver_init(void)
 
 static void __exit pcd_driver_cleanup(void)
 {
-
+    device_destroy(class_pcd, device_number);
+    class_destroy(class_pcd);
+    cdev_del(&pcd_cdev);
+    unregister_chrdev_region(device_number, 1);
+    pr_info("Module unloaded\n");
 }
 
 loff_t pcd_lseek (struct file *filp, loff_t off, int whence)
