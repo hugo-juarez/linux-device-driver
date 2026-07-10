@@ -7,10 +7,23 @@
 /* pseudo device's memory */
 char device_buffer[DEV_MEM_SIZE];
 
+loff_t pcd_lseek (struct file *filp, loff_t off, int whence);
+ssize_t pcd_read (struct file *filp, char __user *buff, size_t count, loff_t *f_pos);
+ssize_t pcd_write (struct file *filp, const char __user *buff, size_t count, loff_t *f_pos);
+int pcd_open (struct inode *inode, struct file *filp);
+int pcd_release (struct inode *inode, struct file *filp);
+
 dev_t device_number;
 
 struct cdev pcd_cdev;
-struct file_operations pcd_fops;
+struct file_operations pcd_fops = {
+    .open = pcd_open,
+    .write = pcd_write,
+    .read = pcd_read,
+    .llseek = pcd_lseek,
+    .release = pcd_release,
+    .owner = THIS_MODULE
+};
 
 static int __init pcd_driver_init(void)
 {
@@ -30,6 +43,27 @@ static int __init pcd_driver_init(void)
 static void __exit pcd_driver_cleanup(void)
 {
 
+}
+
+loff_t pcd_lseek (struct file *filp, loff_t off, int whence)
+{
+    return 0;
+}
+ssize_t pcd_read (struct file *filp, char __user *buff, size_t count, loff_t *f_pos)
+{
+    return 0;
+}
+ssize_t pcd_write (struct file *filp, const char __user *buff, size_t count, loff_t *f_pos)
+{
+    return 0;
+}
+int pcd_open (struct inode *inode, struct file *filp)
+{
+    return 0;
+}
+int pcd_release (struct inode *inode, struct file *filp)
+{
+    return 0;
 }
 
 module_init(pcd_driver_init);
