@@ -69,22 +69,22 @@ loff_t pcd_lseek (struct file *filp, loff_t off, int whence)
 }
 ssize_t pcd_read (struct file *filp, char __user *buff, size_t count, loff_t *f_pos)
 {
-    pr_info("read  requested\n");
+    pr_info("read requested for %zu bytes\n", count);
     return 0;
 }
 ssize_t pcd_write (struct file *filp, const char __user *buff, size_t count, loff_t *f_pos)
 {
-    pr_info("write requested\n");
+    pr_info("write requested for %zu bytes\n", count);
     return 0;
 }
 int pcd_open (struct inode *inode, struct file *filp)
 {
-    pr_info("open  requested\n");
+    pr_info("open was successful\n");
     return 0;
 }
 int pcd_release (struct inode *inode, struct file *filp)
 {
-    pr_info("relea requested\n");
+    pr_info("relea was successful\n");
     return 0;
 }
 
