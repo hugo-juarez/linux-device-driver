@@ -1,4 +1,4 @@
-obj-m := main.o
+obj-m := pcd.o
 
 ARCH=arm
 CROSS_COMPILE=/buildroot/output/host/bin/arm-buildroot-linux-gnueabihf-
