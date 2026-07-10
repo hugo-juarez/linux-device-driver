@@ -1,7 +1,10 @@
 #include <linux/module.h>
 #include <linux/fs.h>
 #include <linux/cdev.h>
+#include <linux/kdev_t.h>
 
+#undef pr_fmt
+#define pr_fmt(fmt) "%s :" fmt, __func__
 #define DEV_MEM_SIZE 512
 
 /* pseudo device's memory */
@@ -16,6 +19,7 @@ int pcd_release (struct inode *inode, struct file *filp);
 dev_t device_number;
 
 struct cdev pcd_cdev;
+
 struct file_operations pcd_fops = {
     .open = pcd_open,
     .write = pcd_write,
@@ -25,10 +29,15 @@ struct file_operations pcd_fops = {
     .owner = THIS_MODULE
 };
 
+struct class *class_pcd;
+struct device *device_pcd;
+
 static int __init pcd_driver_init(void)
 {
     // Dynamically allocate a device number
-    alloc_chrdev_region(&device_number, 0, 1, "pcd");
+    alloc_chrdev_region(&device_number, 0, 1, "pcd_devices");
+
+    pr_info("Device number <major>:<minor> = %d:%d\n", MAJOR(device_number), MINOR(device_number));
 
     // Initialize cdev with fops
     cdev_init(&pcd_cdev, &pcd_fops);
@@ -36,6 +45,14 @@ static int __init pcd_driver_init(void)
     // Register a device (cdev structure) with VFS
     pcd_cdev.owner = THIS_MODULE;
     cdev_add(&pcd_cdev, device_number, 1);
+
+    // Create device class under /sys/class/
+    class_pcd = class_create("pcd_class");
+
+    // Populate the sysfs with device information
+    device_pcd = device_create(class_pcd, NULL, device_number, NULL, "pcd");
+
+    pr_info("Module init was successful \n");
 
     return 0;
 }
@@ -47,22 +64,27 @@ static void __exit pcd_driver_cleanup(void)
 
 loff_t pcd_lseek (struct file *filp, loff_t off, int whence)
 {
+    pr_info("lseek requested\n");
     return 0;
 }
 ssize_t pcd_read (struct file *filp, char __user *buff, size_t count, loff_t *f_pos)
 {
+    pr_info("read  requested\n");
     return 0;
 }
 ssize_t pcd_write (struct file *filp, const char __user *buff, size_t count, loff_t *f_pos)
 {
+    pr_info("write requested\n");
     return 0;
 }
 int pcd_open (struct inode *inode, struct file *filp)
 {
+    pr_info("open  requested\n");
     return 0;
 }
 int pcd_release (struct inode *inode, struct file *filp)
 {
+    pr_info("relea requested\n");
     return 0;
 }
 
