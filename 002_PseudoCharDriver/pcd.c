@@ -34,22 +34,22 @@ struct device *device_pcd;
 
 static int __init pcd_driver_init(void)
 {
-    // Dynamically allocate a device number
+    /* Dynamically allocate a device number */
     alloc_chrdev_region(&device_number, 0, 1, "pcd_devices");
 
     pr_info("Device number <major>:<minor> = %d:%d\n", MAJOR(device_number), MINOR(device_number));
 
-    // Initialize cdev with fops
+    /* Initialize cdev with fops */
     cdev_init(&pcd_cdev, &pcd_fops);
 
-    // Register a device (cdev structure) with VFS
+    /* Register a device (cdev structure) with VFS */
     pcd_cdev.owner = THIS_MODULE;
     cdev_add(&pcd_cdev, device_number, 1);
 
-    // Create device class under /sys/class/
+    /* Create device class under /sys/class/ */
     class_pcd = class_create("pcd_class");
 
-    // Populate the sysfs with device information
+    /* Populate the sysfs with device information */
     device_pcd = device_create(class_pcd, NULL, device_number, NULL, "pcd");
 
     pr_info("Module init was successful \n");
@@ -74,7 +74,27 @@ loff_t pcd_lseek (struct file *filp, loff_t off, int whence)
 ssize_t pcd_read (struct file *filp, char __user *buff, size_t count, loff_t *f_pos)
 {
     pr_info("read requested for %zu bytes\n", count);
-    return 0;
+    pr_info("Current file position = %lld\n", *f_pos);
+
+    /* Adjust the count */
+    if( (*f_pos + count) > DEV_MEM_SIZE )
+    {
+        count = DEV_MEM_SIZE - *f_pos;
+    }
+
+    /* Copy to user */
+    if(copy_to_user(buff, &device_buffer[*f_pos], count))
+    {
+        return -EFAULT;
+    }
+
+    /* Upadte current file position */
+    *f_pos += count;
+
+    pr_info("Number of bytes successfully read = %zu\n", count);
+    pr_info("Updated file position = %lld\n", *f_pos);
+
+    return count;
 }
 ssize_t pcd_write (struct file *filp, const char __user *buff, size_t count, loff_t *f_pos)
 {
