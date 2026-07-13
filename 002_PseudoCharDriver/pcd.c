@@ -99,7 +99,32 @@ ssize_t pcd_read (struct file *filp, char __user *buff, size_t count, loff_t *f_
 ssize_t pcd_write (struct file *filp, const char __user *buff, size_t count, loff_t *f_pos)
 {
     pr_info("write requested for %zu bytes\n", count);
-    return 0;
+    pr_info("Current file position = %lld\n", *f_pos);
+
+    /* Adjust the count */
+    if( (*f_pos + count) > DEV_MEM_SIZE )
+    {
+        count = DEV_MEM_SIZE - *f_pos;
+    }
+
+    if(!count) 
+    {
+        return -ENOMEM;
+    }
+
+    /* Copy from user */
+    if(copy_from_user(&device_buffer[*f_pos], buff, count))
+    {
+        return -EFAULT;
+    }
+
+    /* Upadte current file position */
+    *f_pos += count;
+
+    pr_info("Number of bytes successfully written = %zu\n", count);
+    pr_info("Updated file position = %lld\n", *f_pos);
+
+    return count;
 }
 int pcd_open (struct inode *inode, struct file *filp)
 {
