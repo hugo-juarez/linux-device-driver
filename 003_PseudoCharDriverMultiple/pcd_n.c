@@ -219,7 +219,7 @@ int pcd_open (struct inode *inode, struct file *filp)
 
 int pcd_release (struct inode *inode, struct file *filp)
 {
-    pr_info("relea was successful\n");
+    pr_info("release was successful\n");
     return 0;
 }
 
@@ -292,43 +292,46 @@ ssize_t pcd_write (struct file *filp, const char __user *buff, size_t count, lof
 
 loff_t pcd_lseek (struct file *filp, loff_t offset, int whence)
 {
-    // loff_t temp;
+    struct pcdev_private_data *pcdev_data = (struct pcdev_private_data*) filp->private_data;
+    
+    int max_size = pcdev_data->size;
 
-    // pr_info("lseek requested\n");
-    // pr_info("Current file position = %lld\n", filp->f_pos);
+    loff_t temp;
 
-    // switch(whence) 
-    // {
-    //     case SEEK_SET:
-    //         if( offset > DEV_MEM_SIZE || offset < 0 ) 
-    //         {
-    //             return -EINVAL;
-    //         }
-    //         filp->f_pos = offset;
-    //         break;
-    //     case SEEK_CUR:
-    //         temp = filp->f_pos + offset;
-    //         if( temp > DEV_MEM_SIZE || temp < 0 )
-    //         {
-    //             return -EINVAL;
-    //         }
-    //         filp->f_pos = temp;
-    //         break;
-    //     case SEEK_END:
-    //         temp = DEV_MEM_SIZE + offset;
-    //         if( temp > DEV_MEM_SIZE || temp < 0 )
-    //         {
-    //             return -EINVAL;
-    //         }
-    //         filp->f_pos = temp;
-    //         break;
-    //     default:
-    //         return -EINVAL;
-    // }
+    pr_info("lseek requested\n");
+    pr_info("Current file position = %lld\n", filp->f_pos);
 
-    // pr_info("Updated file position = %lld\n", filp->f_pos);
-    // return filp->f_pos;
-    return 0;
+    switch(whence) 
+    {
+        case SEEK_SET:
+            if( offset > max_size || offset < 0 ) 
+            {
+                return -EINVAL;
+            }
+            filp->f_pos = offset;
+            break;
+        case SEEK_CUR:
+            temp = filp->f_pos + offset;
+            if( temp > max_size || temp < 0 )
+            {
+                return -EINVAL;
+            }
+            filp->f_pos = temp;
+            break;
+        case SEEK_END:
+            temp = max_size + offset;
+            if( temp > max_size || temp < 0 )
+            {
+                return -EINVAL;
+            }
+            filp->f_pos = temp;
+            break;
+        default:
+            return -EINVAL;
+    }
+
+    pr_info("Updated file position = %lld\n", filp->f_pos);
+    return filp->f_pos;
 }
 
 
