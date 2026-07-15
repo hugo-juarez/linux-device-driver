@@ -2,6 +2,7 @@
 #include <linux/fs.h>
 #include <linux/cdev.h>
 #include <linux/kdev_t.h>
+#include <linux/kernel.h>
 
 #undef pr_fmt
 #define pr_fmt(fmt)             "%s :" fmt, __func__
@@ -181,6 +182,47 @@ static void __exit pcd_driver_cleanup(void)
     pr_info("Module unloaded\n");
 }
 
+int check_permission(void)
+{
+    return 0;
+}
+
+int pcd_open (struct inode *inode, struct file *filp)
+{
+
+    int ret;
+    int minor_number;
+    struct pcdev_private_data *pcdev_data;
+
+    /* Find out on which device file open was attempted by the user space */
+    minor_number = MINOR(inode->i_rdev);
+
+    /* Get device's private data structure */
+    pcdev_data = container_of(inode->i_cdev, struct pcdev_private_data, cdev);
+
+    /* Pass private data to other methods of the driver */
+    filp->private_data = pcdev_data;
+
+    /* Check permissions */
+    ret = check_permission();
+
+    if (!ret) 
+    {
+        pr_info("open was successful\n");
+    } else
+    {
+        pr_info("open was unsuccessful\n");
+    }
+
+    return ret;
+}
+int pcd_release (struct inode *inode, struct file *filp)
+{
+    pr_info("relea was successful\n");
+    return 0;
+}
+
+
 loff_t pcd_lseek (struct file *filp, loff_t offset, int whence)
 {
     // loff_t temp;
@@ -278,16 +320,7 @@ ssize_t pcd_write (struct file *filp, const char __user *buff, size_t count, lof
     // return count;
     return 0;
 }
-int pcd_open (struct inode *inode, struct file *filp)
-{
-    pr_info("open was successful\n");
-    return 0;
-}
-int pcd_release (struct inode *inode, struct file *filp)
-{
-    pr_info("relea was successful\n");
-    return 0;
-}
+
 
 module_init(pcd_driver_init);
 module_exit(pcd_driver_cleanup);
