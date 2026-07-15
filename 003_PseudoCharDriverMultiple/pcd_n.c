@@ -216,12 +216,42 @@ int pcd_open (struct inode *inode, struct file *filp)
 
     return ret;
 }
+
 int pcd_release (struct inode *inode, struct file *filp)
 {
     pr_info("relea was successful\n");
     return 0;
 }
 
+ssize_t pcd_read (struct file *filp, char __user *buff, size_t count, loff_t *f_pos)
+{
+    struct pcdev_private_data *pcdev_data = (struct pcdev_private_data*) filp->private_data;
+    
+    int max_size = pcdev_data->size;
+
+    pr_info("read requested for %zu bytes\n", count);
+    pr_info("Current file position = %lld\n", *f_pos);
+
+    /* Adjust the count */
+    if( (*f_pos + count) > max_size )
+    {
+        count = max_size - *f_pos;
+    }
+
+    /* Copy to user */
+    if(copy_to_user(buff, &pcdev_data->buffer[*f_pos], count))
+    {
+        return -EFAULT;
+    }
+
+    /* Upadte current file position */
+    *f_pos += count;
+
+    pr_info("Number of bytes successfully read = %zu\n", count);
+    pr_info("Updated file position = %lld\n", *f_pos);
+
+    return count;
+}
 
 loff_t pcd_lseek (struct file *filp, loff_t offset, int whence)
 {
@@ -263,32 +293,7 @@ loff_t pcd_lseek (struct file *filp, loff_t offset, int whence)
     // return filp->f_pos;
     return 0;
 }
-ssize_t pcd_read (struct file *filp, char __user *buff, size_t count, loff_t *f_pos)
-{
-    // pr_info("read requested for %zu bytes\n", count);
-    // pr_info("Current file position = %lld\n", *f_pos);
 
-    // /* Adjust the count */
-    // if( (*f_pos + count) > DEV_MEM_SIZE )
-    // {
-    //     count = DEV_MEM_SIZE - *f_pos;
-    // }
-
-    // /* Copy to user */
-    // if(copy_to_user(buff, &device_buffer[*f_pos], count))
-    // {
-    //     return -EFAULT;
-    // }
-
-    // /* Upadte current file position */
-    // *f_pos += count;
-
-    // pr_info("Number of bytes successfully read = %zu\n", count);
-    // pr_info("Updated file position = %lld\n", *f_pos);
-
-    // return count;
-    return 0;
-}
 ssize_t pcd_write (struct file *filp, const char __user *buff, size_t count, loff_t *f_pos)
 {
     // pr_info("write requested for %zu bytes\n", count);
