@@ -253,6 +253,43 @@ ssize_t pcd_read (struct file *filp, char __user *buff, size_t count, loff_t *f_
     return count;
 }
 
+
+ssize_t pcd_write (struct file *filp, const char __user *buff, size_t count, loff_t *f_pos)
+{
+    struct pcdev_private_data *pcdev_data = (struct pcdev_private_data*) filp->private_data;
+    
+    int max_size = pcdev_data->size;
+
+    pr_info("write requested for %zu bytes\n", count);
+    pr_info("Current file position = %lld\n", *f_pos);
+
+    /* Adjust the count */
+    if( (*f_pos + count) > max_size )
+    {
+        count = max_size - *f_pos;
+    }
+
+    if(!count) 
+    {
+        return -ENOMEM;
+    }
+
+    /* Copy from user */
+    if(copy_from_user(&pcdev_data->buffer[*f_pos], buff, count))
+    {
+        return -EFAULT;
+    }
+
+    /* Upadte current file position */
+    *f_pos += count;
+
+    pr_info("Number of bytes successfully written = %zu\n", count);
+    pr_info("Updated file position = %lld\n", *f_pos);
+
+    return count;
+}
+
+
 loff_t pcd_lseek (struct file *filp, loff_t offset, int whence)
 {
     // loff_t temp;
@@ -291,38 +328,6 @@ loff_t pcd_lseek (struct file *filp, loff_t offset, int whence)
 
     // pr_info("Updated file position = %lld\n", filp->f_pos);
     // return filp->f_pos;
-    return 0;
-}
-
-ssize_t pcd_write (struct file *filp, const char __user *buff, size_t count, loff_t *f_pos)
-{
-    // pr_info("write requested for %zu bytes\n", count);
-    // pr_info("Current file position = %lld\n", *f_pos);
-
-    // /* Adjust the count */
-    // if( (*f_pos + count) > DEV_MEM_SIZE )
-    // {
-    //     count = DEV_MEM_SIZE - *f_pos;
-    // }
-
-    // if(!count) 
-    // {
-    //     return -ENOMEM;
-    // }
-
-    // /* Copy from user */
-    // if(copy_from_user(&device_buffer[*f_pos], buff, count))
-    // {
-    //     return -EFAULT;
-    // }
-
-    // /* Upadte current file position */
-    // *f_pos += count;
-
-    // pr_info("Number of bytes successfully written = %zu\n", count);
-    // pr_info("Updated file position = %lld\n", *f_pos);
-
-    // return count;
     return 0;
 }
 
