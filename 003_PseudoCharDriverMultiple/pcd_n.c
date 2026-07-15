@@ -145,12 +145,11 @@ static int __init pcd_driver_init(void)
             ret = PTR_ERR(pcdrv_data.device_pcd);
             goto class_del;
         }
-
-        pr_info("Module init was successful \n");
-
-        return 0;
-
     }
+
+    pr_info("Module init was successful \n");
+
+    return 0;
 
 cdev_del:
 class_del:
